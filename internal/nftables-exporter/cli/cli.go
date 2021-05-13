@@ -51,11 +51,12 @@ func Run() {
 			signal.Notify(signalChannel, syscall.SIGINT, syscall.SIGTERM)
 
 			select {
-			case err := <- httpError:
+			case err := <-httpError:
 				return err
-			case err := <- recorderError:
+			case err := <-recorderError:
 				return err
-			case <- signalChannel:
+			case sig := <-signalChannel:
+				logrus.Info("signal received ", sig.String())
 			}
 
 			return nil
