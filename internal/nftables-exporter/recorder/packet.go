@@ -8,7 +8,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/schidstorm/nftables-exporter/internal/nftables-exporter/metrics"
 	nftables_exporter "github.com/schidstorm/nftables-exporter/pkg/nftables-exporter"
-	"github.com/sirupsen/logrus"
 	"strconv"
 )
 
@@ -17,14 +16,14 @@ var handlerContext *handler
 func Packet(ctx context.Context, group int, host string) error {
 	handlerContext = &handler{
 		group: group,
-		host: host,
+		host:  host,
 	}
 
 	if queue, err := nftables_exporter.NewQueue(group, Handle); err != nil {
 		return err
 	} else {
 		go func() {
-			<- ctx.Done()
+			<-ctx.Done()
 			queue.Stop()
 		}()
 
@@ -34,7 +33,7 @@ func Packet(ctx context.Context, group int, host string) error {
 
 type handler struct {
 	group int
-	host string
+	host  string
 }
 
 func Handle(p *nflog.Payload) int {
@@ -48,7 +47,7 @@ func Handle(p *nflog.Payload) int {
 		"daddr": "",
 		"dport": "",
 		"group": strconv.Itoa(handlerContext.group),
-		"host": handlerContext.host,
+		"host":  handlerContext.host,
 	}
 
 	if metric.Udp {
@@ -81,8 +80,6 @@ func Handle(p *nflog.Payload) int {
 	}
 
 	metrics.PacketCounter.With(labels).Inc()
-
-	logrus.Info(labels)
 
 	return 0
 }
@@ -129,8 +126,3 @@ func ParsePacket(payload *nflog.Payload) *metrics.PacketMetric {
 
 	return metric
 }
-
-
-
-
-
