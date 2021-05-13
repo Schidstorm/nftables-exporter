@@ -22,13 +22,20 @@ func Packet(ctx context.Context, group int, host string) error {
 	if queue, err := nftables_exporter.NewQueue(group, Handle); err != nil {
 		return err
 	} else {
-		if err := queue.Start(); err != nil {
-			return err
+		for {
+			if err := queue.Start(); err != nil {
+				return err
+			}
+
+			select {
+			case <-ctx.Done():
+				queue.Stop()
+				return ctx.Err()
+			default:
+				continue
+			}
 		}
 
-		<-ctx.Done()
-		queue.Stop()
-		return ctx.Err()
 	}
 }
 
