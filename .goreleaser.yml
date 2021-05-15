@@ -22,7 +22,8 @@ nfpms:
       - rpm
     dependencies:
       - libnetfilter_log
-
+release:
+  disable: true
 publishers:
   - name: my-publisher
     cmd: echo -version={{ .Version }} {{ abs .ArtifactPath }}
