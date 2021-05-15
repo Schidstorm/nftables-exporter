@@ -13,10 +13,19 @@ builds:
       - linux
     goarch:
       - amd64
-archives:
-  - replacements:
-      linux: Linux
-      amd64: x86_64
+nfpms:
+  - id: packages # here we say that artifacts built with nfpm will be identified with `packages` string.
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    formats:
+      - apk
+      - deb
+      - rpm
+    dependencies:
+      - libnetfilter_log
+
+publishers:
+  - name: my-publisher
+    cmd: echo -version={{ .Version }} {{ abs .ArtifactPath }}
 checksum:
   name_template: 'checksums.txt'
 snapshot:
