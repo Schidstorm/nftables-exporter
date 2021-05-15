@@ -52,10 +52,10 @@ func Handle(p *nflog.Payload) int {
 		"iif":   "",
 		"oif":   "",
 		"saddr": "",
-		"daddr": "",
 		"dport": "",
 		"group": strconv.Itoa(handlerContext.group),
 		"host":  handlerContext.host,
+		"protocol": "",
 	}
 
 	if metric.Udp {
@@ -79,15 +79,18 @@ func Handle(p *nflog.Payload) int {
 	if metric.SourceIp != nil {
 		labels["saddr"] = *metric.SourceIp
 	}
-	if metric.DestinationIp != nil {
-		labels["daddr"] = *metric.DestinationIp
-	}
 
 	if metric.DestinationPort != nil {
 		labels["dport"] = strconv.Itoa(int(*metric.DestinationPort))
 	}
 
-	metrics.PacketCounter.With(labels).Inc()
+	if metric.Protocol != nil {
+		labels["protocol"] = *metric.Protocol
+	}
+
+	if labels["saddr"] != "0.0.0.0" {
+		metrics.PacketCounter.With(labels).Inc()
+	}
 
 	return 0
 }
@@ -113,6 +116,8 @@ func ParsePacket(payload *nflog.Payload) *metrics.PacketMetric {
 		*metric.SourceIp = ipv4.SrcIP.String()
 		metric.DestinationIp = new(string)
 		*metric.DestinationIp = ipv4.DstIP.String()
+		metric.Protocol = new(string)
+		*metric.Protocol = ipv4.Protocol.String()
 	}
 
 	if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {

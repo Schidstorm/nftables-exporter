@@ -25,9 +25,6 @@ var (
 		//source ip
 		"saddr",
 
-		//destination ip
-		"daddr",
-
 		//destination port
 		"dport",
 
@@ -36,6 +33,9 @@ var (
 
 		//is tcp datagram
 		"tcp",
+
+		//protocol name
+		"protocol",
 	})
 )
 
@@ -48,4 +48,5 @@ type PacketMetric struct {
 	DestinationPort *uint16
 	Udp bool
 	Tcp bool
+	Protocol *string
 }

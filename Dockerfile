@@ -1,10 +1,11 @@
-FROM golang as build
+FROM goreleaser/goreleaser:v0.164.0 as build
 
-COPY . /code
-WORKDIR /code
-RUN apt update
-RUN apt-get install -y libnetfilter-log-dev
-RUN GOOS=linux GOARCH=amd64 go build  -o app -a .
+RUN apk update
+RUN apk add libnetfilter_log-dev
 
-FROM scratch
-COPY --from=build /code/app /
+RUN mkdir -p /go/src/github.com/schidstorm/nftables-exporter
+WORKDIR /go/src/github.com/schidstorm/nftables-exporter
+COPY ./* .
+COPY .git .git
+
+#RUN GOOS=linux GOARCH=amd64 go build  -o app github.com/schidstorm/nftables-exporter
