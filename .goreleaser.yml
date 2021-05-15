@@ -22,7 +22,7 @@ nfpms:
       - libnetfilter_log
     deb:
       signature:
-        /signature/deb.gpg
+        key_file: /signature/deb.gpg
 release:
   disable: true
 publishers:
