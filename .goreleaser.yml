@@ -27,7 +27,7 @@ release:
   disable: true
 publishers:
   - name: my-publisher
-    cmd: 'curl -u "admin:$NEXUS_PASSWORD" -H "Content-Type: multipart/form-data" --data-binary "@{{ abs .ArtifactPath }}" "$NEXUS_REPOSITORY"'
+    cmd: 'curl -u "admin:{{ .Env.NEXUS_PASSWORD }}" -H "Content-Type: multipart/form-data" --data-binary "@{{ abs .ArtifactPath }}" "{{ .Env.NEXUS_REPOSITORY }}"'
 checksum:
   name_template: 'checksums.txt'
 snapshot:
