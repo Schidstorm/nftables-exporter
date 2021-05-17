@@ -27,7 +27,7 @@ release:
   disable: true
 publishers:
   - name: my-publisher
-    cmd: 'curl -u "admin:{{ .Env.NEXUS_PASSWORD }}" -H "Content-Type: multipart/form-data" --data-binary "@{{ abs .ArtifactPath }}" "{{ .Env.NEXUS_REPOSITORY }}"'
+    cmd: 'if echo "{{ abs .ArtifactPath }}" | grep ".deb"  ]; then curl -u "admin:{{ .Env.NEXUS_PASSWORD }}" -H "Content-Type: multipart/form-data" --data-binary "@{{ abs .ArtifactPath }}" "{{ .Env.NEXUS_REPOSITORY }}"; else exit 0; fi'
 checksum:
   name_template: 'checksums.txt'
 snapshot:
