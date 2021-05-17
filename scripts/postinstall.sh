@@ -2,4 +2,4 @@
 
 
 systemctl daemon-reload
-systemctl start nftables
+systemctl start nftables-exporter
