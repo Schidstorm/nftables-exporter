@@ -19,7 +19,7 @@ nfpms:
     formats:
       - deb
     dependencies:
-      - libnetfilter_log1
+      - libnetfilter-log1
     deb:
       signature:
         key_file: /signature/deb.gpg
