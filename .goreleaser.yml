@@ -20,7 +20,14 @@ nfpms:
       - deb
     dependencies:
       - libnetfilter-log1
-      - musl
+    contents:
+      - src: configs/nftables-exporter.service
+        dst: /lib/systemd/system/nftables-exporter.service
+        file_info:
+          mode: 0640
+    scripts:
+      postinstall: "scripts/postinstall.sh"
+      preremove: "scripts/preremove.sh"
     deb:
       signature:
         key_file: /signature/deb.gpg

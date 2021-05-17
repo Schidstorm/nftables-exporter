@@ -1,0 +1,8 @@
+[Unit]
+Description=nftables exporter
+
+[Service]
+ExecStart=/usr/local/bin/nftables-exporter --group 0
+
+[Install]
+WantedBy=multi-user.target
