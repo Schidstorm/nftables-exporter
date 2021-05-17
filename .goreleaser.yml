@@ -19,7 +19,7 @@ nfpms:
     formats:
       - deb
     dependencies:
-      - libnetfilter_log
+      - libnetfilter_log1
     deb:
       signature:
         key_file: /signature/deb.gpg
@@ -27,7 +27,7 @@ release:
   disable: true
 publishers:
   - name: my-publisher
-    cmd: 'if echo "{{ abs .ArtifactPath }}" | grep ".deb"  ]; then curl -u "admin:{{ .Env.NEXUS_PASSWORD }}" -H "Content-Type: multipart/form-data" --data-binary "@{{ abs .ArtifactPath }}" "{{ .Env.NEXUS_REPOSITORY }}"; else exit 0; fi'
+    cmd: 'curl -u "admin:{{ .Env.NEXUS_PASSWORD }}" -H "Content-Type: multipart/form-data" --data-binary "@{{ abs .ArtifactPath }}" "{{ .Env.NEXUS_REPOSITORY }}"'
 checksum:
   name_template: 'checksums.txt'
 snapshot:
