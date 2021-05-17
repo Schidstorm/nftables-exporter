@@ -20,6 +20,7 @@ nfpms:
       - deb
     dependencies:
       - libnetfilter-log1
+      - musl
     deb:
       signature:
         key_file: /signature/deb.gpg
