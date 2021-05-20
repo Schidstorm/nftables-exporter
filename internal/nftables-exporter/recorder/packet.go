@@ -120,6 +120,16 @@ func ParsePacket(payload *nflog.Payload) *metrics.PacketMetric {
 		*metric.Protocol = ipv4.Protocol.String()
 	}
 
+	if ipLayer := packet.Layer(layers.LayerTypeIPv6); ipLayer != nil {
+		ipv6, _ := ipLayer.(*layers.IPv6)
+		metric.SourceIp = new(string)
+		*metric.SourceIp = ipv6.SrcIP.String()
+		metric.DestinationIp = new(string)
+		*metric.DestinationIp = ipv6.DstIP.String()
+		metric.Protocol = new(string)
+		*metric.Protocol = ipv6.NextHeader.String()
+	}
+
 	if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
 		metric.Tcp = true
 		tcp, _ := tcpLayer.(*layers.TCP)
