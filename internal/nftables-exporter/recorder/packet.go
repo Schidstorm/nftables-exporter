@@ -108,9 +108,9 @@ func ParsePacket(payload *nflog.Payload) *metrics.PacketMetric {
 		*metric.OutputInterface = outInterface.Attrs().Name
 	}
 
-	packet := gopacket.NewPacket(payload.Data, layers.LayerTypeIPv4, gopacket.Default)
+	packetV4 := gopacket.NewPacket(payload.Data, layers.LayerTypeIPv4, gopacket.Default)
 
-	if ipLayer := packet.Layer(layers.LayerTypeIPv4); ipLayer != nil {
+	if ipLayer := packetV4.Layer(layers.LayerTypeIPv4); ipLayer != nil {
 		ipv4, _ := ipLayer.(*layers.IPv4)
 		metric.SourceIp = new(string)
 		*metric.SourceIp = ipv4.SrcIP.String()
@@ -120,7 +120,8 @@ func ParsePacket(payload *nflog.Payload) *metrics.PacketMetric {
 		*metric.Protocol = ipv4.Protocol.String()
 	}
 
-	if ipLayer := packet.Layer(layers.LayerTypeIPv6); ipLayer != nil {
+	packetV6 := gopacket.NewPacket(payload.Data, layers.LayerTypeIPv6, gopacket.Default)
+	if ipLayer := packetV6.Layer(layers.LayerTypeIPv6); ipLayer != nil {
 		ipv6, _ := ipLayer.(*layers.IPv6)
 		metric.SourceIp = new(string)
 		*metric.SourceIp = ipv6.SrcIP.String()
@@ -130,14 +131,14 @@ func ParsePacket(payload *nflog.Payload) *metrics.PacketMetric {
 		*metric.Protocol = ipv6.NextHeader.String()
 	}
 
-	if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
+	if tcpLayer := packetV4.Layer(layers.LayerTypeTCP); tcpLayer != nil {
 		metric.Tcp = true
 		tcp, _ := tcpLayer.(*layers.TCP)
 		metric.DestinationPort = new(uint16)
 		*metric.DestinationPort = uint16(tcp.DstPort)
 	} else {
 		metric.Tcp = false
-		if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
+		if udpLayer := packetV4.Layer(layers.LayerTypeUDP); udpLayer != nil {
 			metric.Udp = true
 			udp, _ := udpLayer.(*layers.UDP)
 			metric.DestinationPort = new(uint16)
