@@ -6,20 +6,22 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/schidstorm/nftables-exporter/internal/nftables-exporter/metrics"
+	"github.com/schidstorm/nftables-exporter/pkg/metrics"
 	nftables_exporter "github.com/schidstorm/nftables-exporter/pkg/nftables-exporter"
 	"strconv"
 )
 
 var handlerContext *handler
 
-func Packet(ctx context.Context, group int, host string) error {
+func Packet(ctx context.Context, group int, host string, queueInterface nftables_exporter.QueueInterface) error {
 	handlerContext = &handler{
 		group: group,
 		host:  host,
 	}
 
-	if queue, err := nftables_exporter.NewQueue(group, Handle); err != nil {
+	queue := queueInterface
+
+	if err := queue.Initialize(group, Handle); err != nil {
 		return err
 	} else {
 		for {
@@ -30,12 +32,11 @@ func Packet(ctx context.Context, group int, host string) error {
 			select {
 			case <-ctx.Done():
 				queue.Stop()
-				return ctx.Err()
+				return nil
 			default:
 				continue
 			}
 		}
-
 	}
 }
 
@@ -45,16 +46,16 @@ type handler struct {
 }
 
 func Handle(p *nflog.Payload) int {
-	metric := ParsePacket(p)
+	metric := ParsePacket(&Payload{nflogPayload: p})
 	labels := prometheus.Labels{
-		"udp":   "",
-		"tcp":   "",
-		"iif":   "",
-		"oif":   "",
-		"saddr": "",
-		"dport": "",
-		"group": strconv.Itoa(handlerContext.group),
-		"host":  handlerContext.host,
+		"udp":      "",
+		"tcp":      "",
+		"iif":      "",
+		"oif":      "",
+		"saddr":    "",
+		"dport":    "",
+		"group":    strconv.Itoa(handlerContext.group),
+		"host":     handlerContext.host,
 		"protocol": "",
 	}
 
@@ -95,7 +96,7 @@ func Handle(p *nflog.Payload) int {
 	return 0
 }
 
-func ParsePacket(payload *nflog.Payload) *metrics.PacketMetric {
+func ParsePacket(payload PayloadInterface) *metrics.PacketMetric {
 	metric := &metrics.PacketMetric{}
 
 	if inInterface, err := nftables_exporter.GetInterfaceFromNumber(payload.GetInDev()); err == nil {
@@ -108,27 +109,30 @@ func ParsePacket(payload *nflog.Payload) *metrics.PacketMetric {
 		*metric.OutputInterface = outInterface.Attrs().Name
 	}
 
-	packetV4 := gopacket.NewPacket(payload.Data, layers.LayerTypeIPv4, gopacket.Default)
-
+	packetV4 := gopacket.NewPacket(payload.GetData(), layers.LayerTypeIPv4, gopacket.NoCopy)
 	if ipLayer := packetV4.Layer(layers.LayerTypeIPv4); ipLayer != nil {
 		ipv4, _ := ipLayer.(*layers.IPv4)
-		metric.SourceIp = new(string)
-		*metric.SourceIp = ipv4.SrcIP.String()
-		metric.DestinationIp = new(string)
-		*metric.DestinationIp = ipv4.DstIP.String()
-		metric.Protocol = new(string)
-		*metric.Protocol = ipv4.Protocol.String()
+		if ipv4.Version == 4 {
+			metric.SourceIp = new(string)
+			*metric.SourceIp = ipv4.SrcIP.String()
+			metric.DestinationIp = new(string)
+			*metric.DestinationIp = ipv4.DstIP.String()
+			metric.Protocol = new(string)
+			*metric.Protocol = ipv4.Protocol.String()
+		}
 	}
 
-	packetV6 := gopacket.NewPacket(payload.Data, layers.LayerTypeIPv6, gopacket.Default)
+	packetV6 := gopacket.NewPacket(payload.GetData(), layers.LayerTypeIPv6, gopacket.NoCopy)
 	if ipLayer := packetV6.Layer(layers.LayerTypeIPv6); ipLayer != nil {
 		ipv6, _ := ipLayer.(*layers.IPv6)
-		metric.SourceIp = new(string)
-		*metric.SourceIp = ipv6.SrcIP.String()
-		metric.DestinationIp = new(string)
-		*metric.DestinationIp = ipv6.DstIP.String()
-		metric.Protocol = new(string)
-		*metric.Protocol = ipv6.NextHeader.String()
+		if ipv6.Version == 6 {
+			metric.SourceIp = new(string)
+			*metric.SourceIp = ipv6.SrcIP.String()
+			metric.DestinationIp = new(string)
+			*metric.DestinationIp = ipv6.DstIP.String()
+			metric.Protocol = new(string)
+			*metric.Protocol = ipv6.NextHeader.String()
+		}
 	}
 
 	if tcpLayer := packetV4.Layer(layers.LayerTypeTCP); tcpLayer != nil {

@@ -2,7 +2,7 @@ package cli
 
 import (
 	"context"
-	"github.com/schidstorm/nftables-exporter/internal/nftables-exporter/app"
+	"github.com/schidstorm/nftables-exporter/pkg/config"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
@@ -10,7 +10,7 @@ import (
 	"syscall"
 )
 
-func Run() {
+func Run(handler func(cfg config.Config, applicationContext context.Context) chan error) {
 	rootCommand := &cobra.Command{
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var group int
@@ -44,16 +44,18 @@ func Run() {
 			applicationContext, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			httpError := app.RunMetrics(metricsPath, address)
-			recorderError := app.RunRecorder(applicationContext, group, hostname)
+			handleErrorChannel := handler(config.Config{
+				MetricsPath: metricsPath,
+				Address:     address,
+				Hostname:    hostname,
+				Group:       group,
+			}, applicationContext)
 
 			signalChannel := make(chan os.Signal)
 			signal.Notify(signalChannel, syscall.SIGINT, syscall.SIGTERM)
 
 			select {
-			case err := <-httpError:
-				return err
-			case err := <-recorderError:
+			case err := <-handleErrorChannel:
 				return err
 			case sig := <-signalChannel:
 				logrus.Info("signal received ", sig.String())
