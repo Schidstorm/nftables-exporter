@@ -36,17 +36,20 @@ var (
 
 		//protocol name
 		"protocol",
+
+		// ip version (4 or 6)
+		"ipVersion",
 	})
 )
 
-
 type PacketMetric struct {
-	InputInterface *string
-	OutputInterface *string
-	SourceIp *string
-	DestinationIp *string
-	DestinationPort *uint16
-	Udp bool
-	Tcp bool
-	Protocol *string
+	InputInterface  string
+	OutputInterface string
+	SourceIp        string
+	DestinationIp   string
+	DestinationPort uint16
+	Udp             bool
+	Tcp             bool
+	Protocol        string
+	IpVersion		int
 }

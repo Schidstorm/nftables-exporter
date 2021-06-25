@@ -5,11 +5,11 @@ type packetMock struct {
 }
 
 func (p *packetMock) GetInDev() uint32 {
-	return 0
+	return 1
 }
 
 func (p *packetMock) GetOutDev() uint32 {
-	return 0
+	return 1
 }
 
 func (p *packetMock) GetData() []byte {
