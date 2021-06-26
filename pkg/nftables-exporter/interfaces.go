@@ -10,7 +10,6 @@ var linkList = map[uint32]netlink.Link{}
 var linkListLock = &sync.Mutex{}
 
 func GetInterfaceFromNumber(number uint32) (netlink.Link, error) {
-	number++
 	defer linkListLock.Unlock()
 	linkListLock.Lock()
 

@@ -52,7 +52,11 @@ type handler struct {
 }
 
 func Handle(p *nflog.Payload) int {
-	HandlePayload(&Payload{nflogPayload: p})
+	HandlePayload(&Payload{
+		nflogPayload: p,
+		inDev: p.GetInDev(),
+		outDev: p.GetOutDev(),
+	})
 	return 0
 }
 
