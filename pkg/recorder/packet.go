@@ -104,6 +104,7 @@ func ParsePayload(payload PayloadInterface) *metrics.PacketMetric {
 	}
 
 	if metric.IpVersion == 0 {
+		logrus.Error("Invalid ip packet")
 		return nil
 	}
 
