@@ -46,9 +46,9 @@ func (q *Queue) Initialize(group int, handler nflog.Callback) error {
 		return err
 	}
 
-	if err := q.queue.SetMode(nflog.NFULNL_COPY_PACKET); err != nil {
+	/*if err := q.queue.SetMode(nflog.NFULNL_COPY_PACKET); err != nil {
 		return err
-	}
+	}*/
 
 	logrus.Info("initialized queue")
 
